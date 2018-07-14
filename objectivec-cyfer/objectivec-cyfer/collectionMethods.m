@@ -12,6 +12,29 @@
 
 @implementation collectionMethods
 
+- (id)init {
+    if ((self = [super init])) {
+        [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self
+                                                               selector:@selector(appDidActivate:)
+                                                                   name:NSWorkspaceDidActivateApplicationNotification
+                                                                 object:nil];
+        //NSLog(@"here");
+    }
+    return self;
+}
+
+- (void)dealloc {
+    [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
+    //[super dealloc];
+}
+
+- (void)appDidActivate:(NSNotification *)notification {
+    NSDictionary *userInfo = [notification userInfo];
+    NSLog(@"userInfo == %@", userInfo);
+}
+
+
+
 /*
  (Supposed to) return the frontmost application. Currently does not get updated after first application.
 */

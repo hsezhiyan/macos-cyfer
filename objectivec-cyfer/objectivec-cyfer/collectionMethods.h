@@ -9,6 +9,9 @@
 
 @interface collectionMethods : NSObject
 
+-(id) init;
+-(void) dealloc;
+-(void) appDidActivate:(NSNotification *)notification;
 -(NSRunningApplication*) frontmostApplication;
 -(NSMutableArray*) allRunningApplications;
 
