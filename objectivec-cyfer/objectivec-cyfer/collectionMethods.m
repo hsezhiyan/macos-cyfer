@@ -30,6 +30,7 @@
 
 - (void)appDidActivate:(NSNotification *)notification {
     NSDictionary *userInfo = [notification userInfo];
+    
     NSLog(@"userInfo == %@", userInfo);
 }
 
