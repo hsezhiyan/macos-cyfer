@@ -9,6 +9,9 @@
 
 @interface collectionMethods : NSObject
 
+extern CFTimeInterval startTime;
+extern CFTimeInterval endTime;
+
 -(id) init;
 -(void) dealloc;
 -(void) appDidActivate:(NSNotification *)notification;
