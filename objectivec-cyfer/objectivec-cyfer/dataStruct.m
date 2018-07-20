@@ -21,7 +21,7 @@ NSMutableDictionary *timerDict = nil;
 
 - (NSString*) preprocessing: (NSDictionary*) rawApplicationName {
     for(id key in rawApplicationName)
-        NSLog(@"key=%@ value=%@", key, [rawApplicationName objectForKey:key]);
+        NSLog(@"key=%@ value=%@", key, [[rawApplicationName objectForKey:key] localizedName]);
     return @"Hello";
 }
 
