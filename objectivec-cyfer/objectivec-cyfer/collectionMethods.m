@@ -41,7 +41,11 @@ CFTimeInterval previousElapsedTime;
                                                                selector:@selector(appDidActivate:)
                                                                    name:NSWorkspaceDidActivateApplicationNotification
                                                                  object:nil];
-        //NSLog(@"here");
+        
+        [NSTimer scheduledTimerWithTimeInterval:15.0f target:self
+                                                    selector:@selector(polling:)
+                                                    userInfo:nil
+                                                     repeats:YES];
     }
     return self;
 }
@@ -51,15 +55,27 @@ CFTimeInterval previousElapsedTime;
     //[super dealloc];
 }
 
+/*
+ If a new application is activated, this method is called.
+ */
 - (void) appDidActivate:(NSNotification *)notification {
-    endTime = [timerMethod getCurrentTime];
-    CFTimeInterval elapsedTime = [timerMethod getElapsedTime: startTime andTime2:endTime];
+    //endTime = [timerMethod getCurrentTime];
+    //CFTimeInterval elapsedTime = [timerMethod getElapsedTime: startTime andTime2:endTime];
     NSDictionary *userInfo = [notification userInfo];
     NSString* processedInfo = [dataDict preprocessing: userInfo];
     NSLog(@"Processed application name: %@", processedInfo);
-    NSLog(@"Amount of time spent on app: %f", elapsedTime);
-    NSLog(@"userInfo == %@", userInfo);
-    startTime = endTime;
+    //NSLog(@"Amount of time spent on app: %f", elapsedTime);
+    //NSLog(@"userInfo == %@", userInfo);
+    //[[dataDict timerDict] setObject:[NSNumber numberWithInt:42] forKey:@"A cool number"];
+    //NSLog(@"Dictionary: %@", [[dataDict timerDict] description]);
+    //startTime = endTime;
+}
+
+/*
+ Used for continuous polling. Every couple of seconds (tbh), we'll look at the front most application.
+ */
+- (void) polling:(NSNotification *)notification {
+    //NSLog(@"Poll Reached");
 }
 
 /*
