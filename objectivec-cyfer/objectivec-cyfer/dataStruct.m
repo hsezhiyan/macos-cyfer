@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "dataStruct.h"
 
-NSMutableDictionary *timerDict = nil;
+static NSMutableDictionary *timerDict = nil;
 
 @implementation dataStruct
 
@@ -19,10 +19,15 @@ NSMutableDictionary *timerDict = nil;
     }
 }
 
+- (NSMutableDictionary*) timerDict {
+    return timerDict;
+}
+
 - (NSString*) preprocessing: (NSDictionary*) rawApplicationName {
     for(id key in rawApplicationName)
-        NSLog(@"key=%@ value=%@", key, [[rawApplicationName objectForKey:key] localizedName]);
-    return @"Hello";
+        //NSLog(@"key=%@ value=%@", key, [[rawApplicationName objectForKey:key] localizedName]);
+        return([[rawApplicationName objectForKey:key] localizedName]);
+    return(@"Application Name Not Received");
 }
 
 @end
