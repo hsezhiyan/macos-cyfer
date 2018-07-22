@@ -12,6 +12,8 @@
 #import "timerMethods.h"
 #import "dataStruct.h"
 
+NSString* previousApp = nil;
+NSString* currentApp = nil;
 timerMethods *timerMethod = nil;
 dataStruct *dataDict = nil;
 CFTimeInterval startTime;
@@ -38,6 +40,11 @@ CFTimeInterval previousElapsedTime;
 - (id) init {
     if ((self = [super init])) {
         [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self
+                                                               selector:@selector(appDidDeactivate:)
+                                                                   name:NSWorkspaceDidDeactivateApplicationNotification
+                                                                 object:nil];
+        
+        [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self
                                                                selector:@selector(appDidActivate:)
                                                                    name:NSWorkspaceDidActivateApplicationNotification
                                                                  object:nil];
@@ -56,23 +63,46 @@ CFTimeInterval previousElapsedTime;
 }
 
 /*
- If a new application is activated, this method is called.
+ If a new application is closed (removed from forefront), this method is called.
  */
-- (void) appDidActivate:(NSNotification *)notification {
-    //endTime = [timerMethod getCurrentTime];
-    //CFTimeInterval elapsedTime = [timerMethod getElapsedTime: startTime andTime2:endTime];
+- (void) appDidDeactivate:(NSNotification *)notification {
+    
+    endTime = [timerMethod getCurrentTime];
+    CFTimeInterval elapsedTime = [timerMethod getElapsedTime: startTime andTime2:endTime];
+    startTime = endTime;
+
     NSDictionary *userInfo = [notification userInfo];
     NSString* processedInfo = [dataDict preprocessing: userInfo];
-    NSLog(@"Processed application name: %@", processedInfo);
-    //NSLog(@"Amount of time spent on app: %f", elapsedTime);
-    //NSLog(@"userInfo == %@", userInfo);
-    //[[dataDict timerDict] setObject:[NSNumber numberWithInt:42] forKey:@"A cool number"];
-    //NSLog(@"Dictionary: %@", [[dataDict timerDict] description]);
-    //startTime = endTime;
+    previousApp = processedInfo;
+    
+    if (![[dataDict timerDict] objectForKey:processedInfo]) {
+        [[dataDict timerDict] setObject:[NSNumber numberWithFloat:elapsedTime] forKey:processedInfo];
+    } else {
+        NSNumber* previousElapsedTime = [[dataDict timerDict] valueForKey:processedInfo];
+        double previousTime = [previousElapsedTime doubleValue];
+        CFTimeInterval newElapsedTime = previousTime + elapsedTime;
+        [[dataDict timerDict] setObject:[NSNumber numberWithFloat:newElapsedTime] forKey:processedInfo];
+    }
+    
+    NSLog(@"Dictionary: %@", [[dataDict timerDict] description]);
+    
 }
 
 /*
- Used for continuous polling. Every couple of seconds (tbh), we'll look at the front most application.
+ If a new application is activated, this method is called.
+ */
+- (void) appDidActivate:(NSNotification *)notification {
+    
+    NSDictionary *userInfo = [notification userInfo];
+    NSString* processedInfo = [dataDict preprocessing: userInfo];
+    currentApp = processedInfo;
+    
+    NSLog(@"Current application running: %@", currentApp);
+    
+}
+
+/*
+ Used for continuous polling. Every couple of seconds (tba), we'll look at the front most application.
  */
 - (void) polling:(NSNotification *)notification {
     //NSLog(@"Poll Reached");
@@ -99,3 +129,4 @@ CFTimeInterval previousElapsedTime;
 }
 
 @end
+
