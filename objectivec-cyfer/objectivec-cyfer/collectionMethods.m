@@ -11,14 +11,19 @@
 #import "collectionMethods.h"
 #import "timerMethods.h"
 #import "dataStruct.h"
+#import "IdleTime.h"
 
 NSString* previousApp = nil;
 NSString* currentApp = nil;
 timerMethods *timerMethod = nil;
 dataStruct *dataDict = nil;
+IdleTime *idleTracker = nil;
 CFTimeInterval startTime;
 CFTimeInterval endTime;
 CFTimeInterval previousElapsedTime;
+float pollingInterval = 30.0;
+float idleTimeThreshold = 120.0;
+float timeOnCurrentApp = 0.0;
 
 @implementation collectionMethods
 
@@ -35,6 +40,9 @@ CFTimeInterval previousElapsedTime;
     if (!endTime) {
         endTime = [timerMethod getCurrentTime];
     }
+    if (!idleTracker) {
+        idleTracker = [[IdleTime alloc] init];
+    }
 }
 
 - (id) init {
@@ -49,7 +57,7 @@ CFTimeInterval previousElapsedTime;
                                                                    name:NSWorkspaceDidActivateApplicationNotification
                                                                  object:nil];
         
-        [NSTimer scheduledTimerWithTimeInterval:15.0f target:self
+        [NSTimer scheduledTimerWithTimeInterval:pollingInterval target:self
                                                     selector:@selector(polling:)
                                                     userInfo:nil
                                                      repeats:YES];
@@ -93,19 +101,44 @@ CFTimeInterval previousElapsedTime;
  */
 - (void) appDidActivate:(NSNotification *)notification {
     
-    NSDictionary *userInfo = [notification userInfo];
+    NSDictionary* userInfo = [notification userInfo];
     NSString* processedInfo = [dataDict preprocessing: userInfo];
     currentApp = processedInfo;
-    
-    NSLog(@"Current application running: %@", currentApp);
-    
+
+    if ([currentApp isEqualToString:@"Google Chrome"]) {
+        NSLog(@"You've opened Chrome.");
+        NSString* currentWebpageURL = [self frontmostWebpageURL];
+        NSLog(@"%@", currentWebpageURL);
+    }
 }
 
 /*
  Used for continuous polling. Every couple of seconds (tba), we'll look at the front most application.
  */
 - (void) polling:(NSNotification *)notification {
-    //NSLog(@"Poll Reached");
+    float idleTime = [idleTracker secondsIdle];
+    CFTimeInterval currentTime = [timerMethod getCurrentTime];
+    if (idleTime <= idleTimeThreshold) {
+        CFTimeInterval timeOnCurrentApp = [timerMethod getElapsedTime: startTime andTime2:currentTime];
+    } else {
+        CFTimeInterval timeOnCurrentApp = [timerMethod getElapsedTime: startTime andTime2:currentTime] - idleTimeThreshold;
+    }
+    timeOnCurrentApp = timeOnCurrentApp + [[[dataDict timerDict] valueForKey:currentApp] doubleValue];
+    // Will pass timeOnCurrentApp to server for real-time data tracking (rather than waiting for an application to close)
+}
+
+- (NSString*) frontmostWebpageURL {
+    NSAppleScript *script= [[NSAppleScript alloc] initWithSource:@"tell application \"Google Chrome\" to return URL of active tab of front window"];
+    NSDictionary *scriptError = nil;
+    NSAppleEventDescriptor *descriptor = [script executeAndReturnError:&scriptError];
+    if(scriptError) {
+        return @"Error in receiving data.";
+    } else {
+        NSAppleEventDescriptor *unicode = [descriptor coerceToDescriptorType:typeUnicodeText];
+        NSData *data = [unicode data];
+        NSString *result = [[NSString alloc] initWithCharacters:(unichar*)[data bytes] length:[data length] / sizeof(unichar)];
+        return result;
+    }
 }
 
 /*
