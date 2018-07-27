@@ -8,6 +8,7 @@
 
 @interface dataStruct : NSObject
 
+-(NSMutableDictionary*) timerDict;
 -(NSString*) preprocessing: (NSDictionary*) rawApplicationName;
 
 @end
