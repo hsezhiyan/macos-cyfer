@@ -107,7 +107,11 @@ float timeOnCurrentApp = 0.0;
 
     if ([currentApp isEqualToString:@"Google Chrome"]) {
         NSLog(@"You've opened Chrome.");
-        NSString* currentWebpageURL = [self frontmostWebpageURL];
+        NSString* currentWebpageURL = [self frontmostWebpageURL: @"Google Chrome"];
+        NSLog(@"%@", currentWebpageURL);
+    } else if ([currentApp isEqualToString:@"Safari"]) {
+        NSLog(@"You've opened Safari.");
+        NSString* currentWebpageURL = [self frontmostWebpageURL: @"Safari"];
         NSLog(@"%@", currentWebpageURL);
     }
 }
@@ -127,8 +131,16 @@ float timeOnCurrentApp = 0.0;
     // Will pass timeOnCurrentApp to server for real-time data tracking (rather than waiting for an application to close)
 }
 
-- (NSString*) frontmostWebpageURL {
-    NSAppleScript *script= [[NSAppleScript alloc] initWithSource:@"tell application \"Google Chrome\" to return URL of active tab of front window"];
+- (NSString*) frontmostWebpageURL: (NSString*) appName {
+    NSString * source;
+    if ([appName isEqualToString: @"Safari"]) {
+        source = [NSString stringWithFormat:@"tell application \"%@\" to return URL of front document as string", appName];
+    } else if ([appName isEqualToString: @"Google Chrome"]) {
+        source = [NSString stringWithFormat:@"tell application \"%@\" to return URL of active tab of front window", appName];
+        
+    }
+    //NSLog(@"%@",source);
+    NSAppleScript *script= [[NSAppleScript alloc] initWithSource:source];
     NSDictionary *scriptError = nil;
     NSAppleEventDescriptor *descriptor = [script executeAndReturnError:&scriptError];
     if(scriptError) {
