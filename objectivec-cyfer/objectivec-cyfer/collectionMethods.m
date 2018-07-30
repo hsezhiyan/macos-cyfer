@@ -12,16 +12,27 @@
 #import "timerMethods.h"
 #import "dataStruct.h"
 #import "IdleTime.h"
+#import "browserTracking.h"
 
 NSString* previousApp = nil;
 NSString* currentApp = nil;
+
+NSString* previousWebsite = nil;
+
 timerMethods *timerMethod = nil;
 dataStruct *dataDict = nil;
 IdleTime *idleTracker = nil;
+browserTracking *browserTracker = nil;
+
 CFTimeInterval startTime;
 CFTimeInterval endTime;
 CFTimeInterval previousElapsedTime;
-float pollingInterval = 30.0;
+
+CFTimeInterval webStartTime;
+CFTimeInterval webEndTime;
+
+float websitePollingInterval = 2.0;
+float appPollingInterval = 30.0;
 float idleTimeThreshold = 120.0;
 float timeOnCurrentApp = 0.0;
 
@@ -40,8 +51,17 @@ float timeOnCurrentApp = 0.0;
     if (!endTime) {
         endTime = [timerMethod getCurrentTime];
     }
+    if (!webStartTime) {
+        webStartTime = [timerMethod getCurrentTime];
+    }
+    if (!webEndTime) {
+        webEndTime = [timerMethod getCurrentTime];
+    }
     if (!idleTracker) {
         idleTracker = [[IdleTime alloc] init];
+    }
+    if (!browserTracker) {
+        browserTracker = [[browserTracking alloc] init];
     }
 }
 
@@ -57,10 +77,15 @@ float timeOnCurrentApp = 0.0;
                                                                    name:NSWorkspaceDidActivateApplicationNotification
                                                                  object:nil];
         
-        [NSTimer scheduledTimerWithTimeInterval:pollingInterval target:self
-                                                    selector:@selector(polling:)
-                                                    userInfo:nil
-                                                     repeats:YES];
+        [NSTimer scheduledTimerWithTimeInterval:appPollingInterval target:self
+                                                                 selector:@selector(appPolling:)
+                                                                 userInfo:nil
+                                                                  repeats:YES];
+        
+        [NSTimer scheduledTimerWithTimeInterval:websitePollingInterval target:self
+                                                                 selector:@selector(websitePolling:)
+                                                                 userInfo:nil
+                                                                  repeats:YES];
     }
     return self;
 }
@@ -78,19 +103,19 @@ float timeOnCurrentApp = 0.0;
     endTime = [timerMethod getCurrentTime];
     CFTimeInterval elapsedTime = [timerMethod getElapsedTime: startTime andTime2:endTime];
     startTime = endTime;
-
+    
     NSDictionary *userInfo = [notification userInfo];
     NSString* processedInfo = [dataDict preprocessing: userInfo];
     previousApp = processedInfo;
     
-    if (![[dataDict timerDict] objectForKey:processedInfo]) {
-        [[dataDict timerDict] setObject:[NSNumber numberWithFloat:elapsedTime] forKey:processedInfo];
-    } else {
-        NSNumber* previousElapsedTime = [[dataDict timerDict] valueForKey:processedInfo];
-        double previousTime = [previousElapsedTime doubleValue];
-        CFTimeInterval newElapsedTime = previousTime + elapsedTime;
-        [[dataDict timerDict] setObject:[NSNumber numberWithFloat:newElapsedTime] forKey:processedInfo];
+    if ([browserTracker isBrowser:previousApp]) {
+        webEndTime = [timerMethod getCurrentTime];
+        CFTimeInterval elapsedWebTime = [timerMethod getElapsedTime: webStartTime andTime2:webEndTime];
+        [dataDict updateDict:[dataDict timerDict] andApp:previousWebsite andElapsedTime:elapsedWebTime];
+        previousWebsite = nil;
     }
+    
+    [dataDict updateDict:[dataDict timerDict] andApp:processedInfo andElapsedTime:elapsedTime];
     
     NSLog(@"Dictionary: %@", [[dataDict timerDict] description]);
     
@@ -105,21 +130,12 @@ float timeOnCurrentApp = 0.0;
     NSString* processedInfo = [dataDict preprocessing: userInfo];
     currentApp = processedInfo;
 
-    if ([currentApp isEqualToString:@"Google Chrome"]) {
-        NSLog(@"You've opened Chrome.");
-        NSString* currentWebpageURL = [self frontmostWebpageURL: @"Google Chrome"];
-        NSLog(@"%@", currentWebpageURL);
-    } else if ([currentApp isEqualToString:@"Safari"]) {
-        NSLog(@"You've opened Safari.");
-        NSString* currentWebpageURL = [self frontmostWebpageURL: @"Safari"];
-        NSLog(@"%@", currentWebpageURL);
-    }
 }
 
 /*
  Used for continuous polling. Every couple of seconds (tba), we'll look at the front most application.
  */
-- (void) polling:(NSNotification *)notification {
+- (void) appPolling:(NSNotification *)notification {
     float idleTime = [idleTracker secondsIdle];
     CFTimeInterval currentTime = [timerMethod getCurrentTime];
     if (idleTime <= idleTimeThreshold) {
@@ -128,36 +144,31 @@ float timeOnCurrentApp = 0.0;
         CFTimeInterval timeOnCurrentApp = [timerMethod getElapsedTime: startTime andTime2:currentTime] - idleTimeThreshold;
     }
     timeOnCurrentApp = timeOnCurrentApp + [[[dataDict timerDict] valueForKey:currentApp] doubleValue];
-    // Will pass timeOnCurrentApp to server for real-time data tracking (rather than waiting for an application to close)
+    // Communicate with server here
 }
 
-- (NSString*) frontmostWebpageURL: (NSString*) appName {
-    NSString * source;
-    if ([appName isEqualToString: @"Safari"]) {
-        source = [NSString stringWithFormat:@"tell application \"%@\" to return URL of front document as string", appName];
-    } else if ([appName isEqualToString: @"Google Chrome"]) {
-        source = [NSString stringWithFormat:@"tell application \"%@\" to return URL of active tab of front window", appName];
+- (void) websitePolling:(NSNotification *)notification {
+    NSString* currentWebsite = nil;
+    if ([browserTracker isBrowser:currentApp]) {
+        if([currentApp isEqualToString:@"Google Chrome"]) {
+            currentWebsite = [browserTracker frontmostWebpageURL: @"Google Chrome"];
+        }
+        if([currentApp isEqualToString:@"Safari"]) {
+            currentWebsite = [browserTracker frontmostWebpageURL: @"Safari"];
+        }
         
-    }
-    //NSLog(@"%@",source);
-    NSAppleScript *script= [[NSAppleScript alloc] initWithSource:source];
-    NSDictionary *scriptError = nil;
-    NSAppleEventDescriptor *descriptor = [script executeAndReturnError:&scriptError];
-    if(scriptError) {
-        return @"Error in receiving data.";
+        if(![currentWebsite isEqualToString:previousWebsite]) {
+            webEndTime = [timerMethod getCurrentTime];
+            CFTimeInterval elapsedWebTime = [timerMethod getElapsedTime: webStartTime andTime2:webEndTime];
+            if ([previousWebsite length] != 0) {
+                [dataDict updateDict:[dataDict timerDict] andApp:previousWebsite andElapsedTime:elapsedWebTime];
+            }
+            webStartTime = webEndTime;
+            previousWebsite = currentWebsite;
+        }
     } else {
-        NSAppleEventDescriptor *unicode = [descriptor coerceToDescriptorType:typeUnicodeText];
-        NSData *data = [unicode data];
-        NSString *result = [[NSString alloc] initWithCharacters:(unichar*)[data bytes] length:[data length] / sizeof(unichar)];
-        return result;
+        webStartTime = [timerMethod getCurrentTime];
     }
-}
-
-/*
- (Supposed to) return the frontmost application. Currently does not get updated after first application.
- */
-- (NSRunningApplication*) frontmostApplication {
-    return [NSWorkspace sharedWorkspace].frontmostApplication;
 }
 
 /*
