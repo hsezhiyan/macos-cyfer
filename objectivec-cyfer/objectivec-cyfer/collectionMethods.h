@@ -12,11 +12,10 @@
 extern CFTimeInterval startTime;
 extern CFTimeInterval endTime;
 
--(id) init;
--(void) dealloc;
--(void) appDidActivate:(NSNotification *)notification;
--(NSRunningApplication*) frontmostApplication;
--(NSMutableArray*) allRunningApplications;
+- (id) init;
+- (void) dealloc;
+- (void) appDidActivate:(NSNotification *)notification;
+- (NSMutableArray*) allRunningApplications;
 
 @end
 
