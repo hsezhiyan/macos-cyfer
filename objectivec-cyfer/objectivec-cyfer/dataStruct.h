@@ -8,7 +8,8 @@
 
 @interface dataStruct : NSObject
 
--(NSMutableDictionary*) timerDict;
--(NSString*) preprocessing: (NSDictionary*) rawApplicationName;
+- (NSMutableDictionary*) timerDict;
+- (NSString*) preprocessing: (NSDictionary*) rawApplicationName;
+- (void) updateDict:(NSMutableDictionary *) timerDict andApp:(NSString *) processedInfo andElapsedTime:(CFTimeInterval) elapsedTime;
 
 @end
