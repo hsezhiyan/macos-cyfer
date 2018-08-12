@@ -27,17 +27,23 @@
     } else if ([appName isEqualToString: @"Google Chrome"]) {
         source = [NSString stringWithFormat:@"tell application \"%@\" to return URL of active tab of front window", appName];
     }
-    //NSLog(@"%@",source);
+//    NSLog(@"%@",source);
     NSAppleScript *script= [[NSAppleScript alloc] initWithSource:source];
     NSDictionary *scriptError = nil;
     NSAppleEventDescriptor *descriptor = [script executeAndReturnError:&scriptError];
     if(scriptError) {
         return @"Error in receiving data.";
     } else {
+        // Use apple script to get the entire URL
         NSAppleEventDescriptor *unicode = [descriptor coerceToDescriptorType:typeUnicodeText];
         NSData *data = [unicode data];
-        NSString *result = [[NSString alloc] initWithCharacters:(unichar*)[data bytes] length:[data length] / sizeof(unichar)];
-        return result;
+        NSString *rawUrl = [[NSString alloc] initWithCharacters:(unichar*)[data bytes] length:[data length] / sizeof(unichar)];
+        
+        // Get the main URL parts
+        NSArray *separatedUrl = [rawUrl componentsSeparatedByString:@"/"];
+        NSString *mainUrl = [separatedUrl objectAtIndex:2];
+        
+        return mainUrl;
     }
 }
 
