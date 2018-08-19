@@ -13,6 +13,7 @@
 #import "dataStruct.h"
 #import "IdleTime.h"
 #import "browserTracking.h"
+#import "serverComm.h"
 
 NSString* previousApp = nil;
 NSString* currentApp = nil;
@@ -23,6 +24,7 @@ timerMethods *timerMethod = nil;
 dataStruct *dataDict = nil;
 IdleTime *idleTracker = nil;
 browserTracking *browserTracker = nil;
+serverComm *serverOutlet = nil;
 
 CFTimeInterval startTime;
 CFTimeInterval endTime;
@@ -31,8 +33,10 @@ CFTimeInterval previousElapsedTime;
 CFTimeInterval webStartTime;
 CFTimeInterval webEndTime;
 
+float globalIdleTime = 0.0;
+
 float websitePollingInterval = 2.0;
-float appPollingInterval = 30.0;
+float appPollingInterval = 5.0;
 float idleTimeThreshold = 120.0;
 float timeOnCurrentApp = 0.0;
 
@@ -62,6 +66,9 @@ float timeOnCurrentApp = 0.0;
     }
     if (!browserTracker) {
         browserTracker = [[browserTracking alloc] init];
+    }
+    if (!serverOutlet) {
+        serverOutlet = [[serverComm alloc] init];
     }
 }
 
@@ -101,7 +108,7 @@ float timeOnCurrentApp = 0.0;
 - (void) appDidDeactivate:(NSNotification *)notification {
     
     endTime = [timerMethod getCurrentTime];
-    CFTimeInterval elapsedTime = [timerMethod getElapsedTime: startTime andTime2:endTime];
+    CFTimeInterval elapsedTime = [timerMethod getElapsedTime: startTime andTime2:endTime] - globalIdleTime;
     startTime = endTime;
     
     NSDictionary *userInfo = [notification userInfo];
@@ -110,14 +117,15 @@ float timeOnCurrentApp = 0.0;
     
     if ([browserTracker isBrowser:previousApp]) {
         webEndTime = [timerMethod getCurrentTime];
-        CFTimeInterval elapsedWebTime = [timerMethod getElapsedTime: webStartTime andTime2:webEndTime];
+        CFTimeInterval elapsedWebTime = [timerMethod getElapsedTime: webStartTime andTime2:webEndTime] - globalIdleTime;
         [dataDict updateDict:[dataDict timerDict] andApp:previousWebsite andElapsedTime:elapsedWebTime];
         previousWebsite = nil;
     }
     
     [dataDict updateDict:[dataDict timerDict] andApp:processedInfo andElapsedTime:elapsedTime];
+    globalIdleTime = 0.0;
     
-    NSLog(@"Dictionary: %@", [[dataDict timerDict] description]);
+    //NSLog(@"Dictionary: %@", [[dataDict timerDict] description]);
     
 }
 
@@ -136,19 +144,19 @@ float timeOnCurrentApp = 0.0;
  Used for continuous polling. Every couple of seconds (tba), we'll look at the front most application.
  */
 - (void) appPolling:(NSNotification *)notification {
-    float idleTime = [idleTracker secondsIdle];
-    CFTimeInterval currentTime = [timerMethod getCurrentTime];
-    if (idleTime <= idleTimeThreshold) {
-        CFTimeInterval timeOnCurrentApp = [timerMethod getElapsedTime: startTime andTime2:currentTime];
-    } else {
-        CFTimeInterval timeOnCurrentApp = [timerMethod getElapsedTime: startTime andTime2:currentTime] - idleTimeThreshold;
-    }
-    timeOnCurrentApp = timeOnCurrentApp + [[[dataDict timerDict] valueForKey:currentApp] doubleValue];
-    // Communicate with server here
+    [dataDict addLocalTime: [dataDict timerDict]];
+    [serverOutlet postDict:[dataDict timerDict]];
+    NSLog(@"Dictionary: %@", [[dataDict timerDict] description]);
 }
 
 - (void) websitePolling:(NSNotification *)notification {
     NSString* currentWebsite = nil;
+    
+    float idleTime = [idleTracker secondsIdle];
+    if (idleTime > idleTimeThreshold) {
+        globalIdleTime = idleTime;
+    }
+    
     if ([browserTracker isBrowser:currentApp]) {
         if([currentApp isEqualToString:@"Google Chrome"]) {
             currentWebsite = [browserTracker frontmostWebpageURL: @"Google Chrome"];
@@ -159,12 +167,13 @@ float timeOnCurrentApp = 0.0;
         
         if(![currentWebsite isEqualToString:previousWebsite]) {
             webEndTime = [timerMethod getCurrentTime];
-            CFTimeInterval elapsedWebTime = [timerMethod getElapsedTime: webStartTime andTime2:webEndTime];
+            CFTimeInterval elapsedWebTime = [timerMethod getElapsedTime: webStartTime andTime2:webEndTime] - globalIdleTime;
             if ([previousWebsite length] != 0) {
                 [dataDict updateDict:[dataDict timerDict] andApp:previousWebsite andElapsedTime:elapsedWebTime];
             }
             webStartTime = webEndTime;
             previousWebsite = currentWebsite;
+            globalIdleTime = 0.0;
         }
     } else {
         webStartTime = [timerMethod getCurrentTime];
@@ -185,6 +194,3 @@ float timeOnCurrentApp = 0.0;
 }
 
 @end
-
-
-
