@@ -20,6 +20,8 @@ NSString* currentApp = nil;
 
 NSString* previousWebsite = nil;
 
+NSMutableDictionary* oldDict = nil;
+
 timerMethods *timerMethod = nil;
 dataStruct *dataDict = nil;
 IdleTime *idleTracker = nil;
@@ -48,6 +50,9 @@ float timeOnCurrentApp = 0.0;
     }
     if(!dataDict) {
         dataDict = [[dataStruct alloc] init];
+    }
+    if(!oldDict) {
+        oldDict = [[NSMutableDictionary alloc] init];
     }
     if (!startTime) {
         startTime = [timerMethod getCurrentTime];
@@ -145,8 +150,25 @@ float timeOnCurrentApp = 0.0;
  */
 - (void) appPolling:(NSNotification *)notification {
     [dataDict addLocalTime: [dataDict timerDict]];
-    [serverOutlet postDict:[dataDict timerDict]];
+    
+    NSMutableDictionary* newDict = [dataDict timerDict];
+    [serverOutlet postDict:[self getUpdatedEventsOnly:oldDict :newDict]];
     NSLog(@"Dictionary: %@", [[dataDict timerDict] description]);
+    oldDict = [[dataDict timerDict] copy];
+}
+
+- (NSMutableDictionary*) getUpdatedEventsOnly:(NSMutableDictionary *) oldDict:(NSMutableDictionary *) newDict {
+    NSMutableDictionary *updatedDict = nil;
+    
+    for (id key in newDict) {
+        id oldValue = [oldDict objectForKey:key];
+        id newValue = [newDict objectForKey:key];
+        if (oldValue == nil || oldValue != newValue) {
+            [updatedDict setObject:newValue forKey:key];
+        }
+    }
+    
+    return updatedDict;
 }
 
 - (void) websitePolling:(NSNotification *)notification {

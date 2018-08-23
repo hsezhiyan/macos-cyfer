@@ -13,6 +13,10 @@
 
 - (void) postDict: (NSDictionary*) timerDict {
     
+    if (timerDict == nil) {
+        return;
+    }
+    
     NSURL *url = [NSURL URLWithString:@"https://cyfer-server-test.herokuapp.com/data"];
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];

@@ -10,6 +10,8 @@
 
 - (NSMutableDictionary*) timerDict;
 - (NSString*) preprocessing: (NSDictionary*) rawApplicationName;
+- (NSMutableDictionary*) addLocalTime: (NSMutableDictionary*) preprocessedDict;
 - (void) updateDict:(NSMutableDictionary *) timerDict andApp:(NSString *) processedInfo andElapsedTime:(CFTimeInterval) elapsedTime;
 
 @end
+
