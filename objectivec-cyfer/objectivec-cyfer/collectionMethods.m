@@ -158,15 +158,16 @@ float timeOnCurrentApp = 0.0;
 }
 
 - (NSMutableDictionary*) getUpdatedEventsOnly:(NSMutableDictionary *) oldDict:(NSMutableDictionary *) newDict {
-    NSMutableDictionary *updatedDict = nil;
+    NSMutableDictionary *updatedDict = [[NSMutableDictionary alloc] init];
     
-    for (id key in newDict) {
-        id oldValue = [oldDict objectForKey:key];
-        id newValue = [newDict objectForKey:key];
+    for (NSString* key in newDict) {
+        NSString* oldValue = [oldDict objectForKey:key];
+        NSString* newValue = [newDict objectForKey:key];
         if (oldValue == nil || oldValue != newValue) {
-            [updatedDict setObject:newValue forKey:key];
+            updatedDict[key] = newValue;
         }
     }
+    NSLog(@"Updated dictionary: %@", updatedDict);
     
     return updatedDict;
 }
