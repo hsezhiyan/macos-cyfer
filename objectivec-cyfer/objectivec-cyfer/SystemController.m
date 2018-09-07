@@ -47,7 +47,12 @@
 }
 
 - (void) forceOpenTab: (NSString*)appName andCompleteUrl: (NSString*)url {
-    
+    NSString * source = [NSString stringWithFormat:
+                         @"tell application \"%@\"\n"
+                            "open location \"%@\"\n"
+                         "end tell\n", appName, url];
+    [self runScript:source];
+    NSLog(@"Tab has been created.");
 }
 
 - (void) pushNotification: (NSString*)notification andTitle:(NSString*)title andSubTitle:(NSString*)subtitle   {
