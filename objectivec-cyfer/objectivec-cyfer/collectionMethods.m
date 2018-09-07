@@ -148,7 +148,6 @@ float timeOnCurrentApp = 0.0;
     NSDictionary* userInfo = [notification userInfo];
     NSString* processedInfo = [dataDict preprocessing: userInfo];
     currentApp = processedInfo;
-
 }
 
 - (NSMutableDictionary*) addCurrentApplication:(NSMutableDictionary *)timerDict {

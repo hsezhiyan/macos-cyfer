@@ -8,9 +8,11 @@
 
 @interface SystemController : NSObject
 
+- (void) runScript: (NSString*)source;
 - (void) forceQuitApp: (NSString*)appName;
 - (void) forceActivateApp: (NSString*)appName;
-- (void) closeChromeTab: (NSString*)url;
+- (void) forceCloseTab: (NSString*)appName andUrl: (NSString*)url;
+- (void) forceOpenTab: (NSString*)appName andCompleteUrl: (NSString*)url;
 - (void) pushNotification: (NSString*)notification andTitle:(NSString*)title andSubTitle:(NSString*)subtitle;
 
 @end
