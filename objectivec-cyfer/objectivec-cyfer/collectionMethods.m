@@ -15,6 +15,7 @@
 #import "browserTracking.h"
 #import "serverComm.h"
 #import "SystemController.h"
+#import "SystemMonitor.h"
 
 NSString* previousApp = nil;
 NSString* currentApp = nil;
@@ -30,6 +31,7 @@ IdleTime *idleTracker = nil;
 browserTracking *browserTracker = nil;
 serverComm *serverOutlet = nil;
 SystemController *deviceController = nil;
+SystemMonitor *deviceMonitor = nil;
 
 CFTimeInterval startTime;
 CFTimeInterval endTime;
@@ -80,6 +82,9 @@ float timeOnCurrentApp = 0.0;
     }
     if (!deviceController) {
         deviceController = [[SystemController alloc] init];
+    }
+    if (!deviceMonitor) {
+        deviceMonitor = [[SystemMonitor alloc] init];
     }
 }
 
@@ -177,6 +182,7 @@ float timeOnCurrentApp = 0.0;
     newDict = [self addCurrentApplication:updatedDict];
     [serverOutlet postDict:newDict];
     oldDict = [[dataDict timerDict] copy];
+    NSLog(@"%f",[deviceMonitor cpuUsage]);
 }
 
 - (NSMutableDictionary*) getUpdatedEventsOnly:(NSMutableDictionary *) oldDict:(NSMutableDictionary *) newDict {
