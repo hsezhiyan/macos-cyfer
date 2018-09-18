@@ -2,6 +2,8 @@
 
 Cyfer is a cross-platform application time-tracker that collects user data on websites visited and applications. The purpose of this is to provide users a 'trainer' that helps them remain productive throughout their day, one that learns each user's particular behavior. We intend to create a sort of life-manager and combine social features as well. This repo contains the macOS data collection components.
 
+NOTE: There are separate repos for server backend and trainer files. This is only for data collection.
+
 # Data Collected
   - Time spent on websites (within Safari/Chrome browsers)
   - Time spent on macOS applications
