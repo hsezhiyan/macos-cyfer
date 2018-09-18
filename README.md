@@ -29,8 +29,7 @@ This component involves abilities to control the Mac the code is running on. Thi
 
 # Data
 
-All data is in JSON format. The JSON structures used are located in the file JSON.rtf
-
+All data is in JSON format. The JSON structures used are located in the file JSON.rtf <br />
 
 The following is an image of how the data looks on Xcode: <img src="/img/data.png" alt="Usage Data"/>
 
