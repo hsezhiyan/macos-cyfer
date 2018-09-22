@@ -18,8 +18,21 @@ typedef struct {
     unsigned int idle;
 } CPUUsage;
 
-@interface SystemMonitor: NSObject
+@interface SystemMonitor: NSObject {
+@private
+    int num_clicks;
+    int num_tabchanges;
+
+}
 - (double)cpuUsage;
+- (void)resetNumsOfClicks;
+- (int)getNumsOfClicks;
+- (void)increNumsOfClicks;
+
+- (void)resetNumsOfChangeTabs;
+- (int)getNumsOfChangeTabs;
+- (void)increNumsOfChangeTabs;
+
 @end
 
 #endif /* SystemMonitor_h */

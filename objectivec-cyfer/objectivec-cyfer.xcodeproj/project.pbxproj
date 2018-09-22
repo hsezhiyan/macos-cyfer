@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B1775D08214E93070093E69D /* SystemMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = B1775D07214E93070093E69D /* SystemMonitor.m */; };
 		B201FD1C2133961C004438D3 /* SystemController.m in Sources */ = {isa = PBXBuildFile; fileRef = B201FD1B2133961C004438D3 /* SystemController.m */; };
 		B20D201C21235EF000D38DFE /* serverComm.m in Sources */ = {isa = PBXBuildFile; fileRef = B20D201B21235EF000D38DFE /* serverComm.m */; };
 		B2500EBB20EF409500BF6D9C /* collectionMethods.m in Sources */ = {isa = PBXBuildFile; fileRef = B2500EBA20EF409500BF6D9C /* collectionMethods.m */; };
@@ -34,6 +35,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B1775D07214E93070093E69D /* SystemMonitor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SystemMonitor.m; sourceTree = "<group>"; };
+		B1775D09214E93300093E69D /* SystemMonitor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SystemMonitor.h; sourceTree = "<group>"; };
 		B201FD1B2133961C004438D3 /* SystemController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SystemController.m; sourceTree = "<group>"; };
 		B201FD1D21339696004438D3 /* SystemController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SystemController.h; sourceTree = "<group>"; };
 		B20D201B21235EF000D38DFE /* serverComm.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = serverComm.m; sourceTree = "<group>"; };
@@ -108,6 +111,8 @@
 				B2BCFF4D21262CB20055894B /* runLoop.h */,
 				B201FD1B2133961C004438D3 /* SystemController.m */,
 				B201FD1D21339696004438D3 /* SystemController.h */,
+				B1775D07214E93070093E69D /* SystemMonitor.m */,
+				B1775D09214E93300093E69D /* SystemMonitor.h */,
 			);
 			path = "objectivec-cyfer";
 			sourceTree = "<group>";
@@ -182,6 +187,7 @@
 				B2E0558820ED713D00315DDB /* main.m in Sources */,
 				B2998F78210E238E00A31B19 /* browserTracking.m in Sources */,
 				B2998F742105632900A31B19 /* IdleTime.m in Sources */,
+				B1775D08214E93070093E69D /* SystemMonitor.m in Sources */,
 				B2BCFF4F21262CC00055894B /* runLoop.m in Sources */,
 				B201FD1C2133961C004438D3 /* SystemController.m in Sources */,
 				B2BC8BBA20FF0B5A007B6752 /* dataStruct.m in Sources */,

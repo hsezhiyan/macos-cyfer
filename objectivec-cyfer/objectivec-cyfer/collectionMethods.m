@@ -182,6 +182,7 @@ float timeOnCurrentApp = 0.0;
     newDict = [self addCurrentApplication:updatedDict];
     [serverOutlet postDict:newDict];
     oldDict = [[dataDict timerDict] copy];
+    
     NSLog(@"%f",[deviceMonitor cpuUsage]);
 }
 
@@ -218,6 +219,7 @@ float timeOnCurrentApp = 0.0;
         if(![currentWebsite isEqualToString:previousWebsite]) {
             globalCurrentWebsite = currentWebsite;
             webEndTime = [timerMethod getCurrentTime];
+            //[deviceMonitor increNumsOfChangeTabs];
             CFTimeInterval elapsedWebTime = [timerMethod getElapsedTime: webStartTime andTime2:webEndTime] - globalIdleTime;
             if ([previousWebsite length] != 0) {
                 [dataDict updateDict:[dataDict timerDict] andApp:previousWebsite andElapsedTime:elapsedWebTime];

@@ -45,4 +45,28 @@
     //return usage;
 }
 
+- (void)resetNumsOfClicks {
+    num_clicks = 0;
+}
+
+- (int)getNumsOfClicks {
+    return num_clicks;
+}
+
+- (void)increNumsOfClicks {
+    num_clicks++;
+}
+
+- (void)resetNumsOfChangeTabs {
+    num_tabchanges = 0;
+}
+
+- (int)getNumsOfChangeTabs {
+    return num_tabchanges;
+}
+
+- (void)increNumsOfChangeTabs {
+    num_tabchanges++;
+}
+
 @ end
