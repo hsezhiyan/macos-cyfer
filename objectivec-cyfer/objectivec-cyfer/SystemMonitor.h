@@ -24,7 +24,8 @@ typedef struct {
     int num_tabchanges;
 
 }
-- (double)cpuUsage;
+- (double)cpuPercentage;
+- (double)cpuSpeed;
 - (void)resetNumsOfClicks;
 - (int)getNumsOfClicks;
 - (void)increNumsOfClicks;

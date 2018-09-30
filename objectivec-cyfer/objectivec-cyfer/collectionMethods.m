@@ -183,7 +183,7 @@ float timeOnCurrentApp = 0.0;
     [serverOutlet postDict:newDict];
     oldDict = [[dataDict timerDict] copy];
     
-    NSLog(@"%f",[deviceMonitor cpuUsage]);
+    NSLog(@"%f",[deviceMonitor cpuSpeed]);
 }
 
 - (NSMutableDictionary*) getUpdatedEventsOnly:(NSMutableDictionary *) oldDict:(NSMutableDictionary *) newDict {

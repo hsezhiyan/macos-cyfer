@@ -11,11 +11,21 @@
 #import <sys/sysctl.h>
 #import <mach/mach.h>
 #import <sys/stat.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <unistd.h>
+
+uint64_t rdtsc(void)
+{
+    uint32_t ret0[2];
+    __asm__ __volatile__("rdtsc" : "=a"(ret0[0]), "=d"(ret0[1]));
+    return ((uint64_t)ret0[1] << 32) | ret0[0];
+}
 
 #import <Foundation/Foundation.h>
 
 @ implementation SystemMonitor
-- (double)cpuUsage {
+- (double)cpuPercentage {
     kern_return_t kr;
     mach_msg_type_number_t count;
     static host_cpu_load_info_data_t previous_info = {0, 0, 0, 0};
@@ -43,6 +53,14 @@
     usage.idle = idle;
     return (user + nice + system) * 100.0 / total;
     //return usage;
+}
+
+- (double)cpuSpeed {
+    uint64_t startCount = rdtsc();
+    sleep(1);
+    uint64_t endCount = rdtsc();
+    
+    return endCount - startCount;
 }
 
 - (void)resetNumsOfClicks {
